@@ -30,6 +30,7 @@
 
 /* Precedência dos operadores */
 %nonassoc <fn> CMP  // comparadores
+%nonassoc <fn> LOGI // operadores lógicos
 %right '='
 %left '+' '-'
 %left '*' '/'
@@ -98,11 +99,13 @@ b_function: FUNC '(' ')'    { $$ = newfunc($1, NULL); }
     ;
 
 /* Expressão */
-exp: exp CMP exp            { $$ = newcmp($2, $1, $3); }
+exp: exp CMP exp            { $$ = newcmp( $2, $1, $3); } 
     | exp '+' exp           { $$ = newast('+', $1, $3); }
     | exp '-' exp           { $$ = newast('-', $1, $3); }
     | exp '*' exp           { $$ = newast('*', $1, $3); }
     | exp '/' exp           { $$ = newast('/', $1, $3); }
+    | exp LOGI exp          { $$ = newlgi($2 , $1, $3); }
+    | LOGI exp              { $$ = newlgi($1 , $2,NULL);}
     | '(' exp ')'           { $$ = $2; }
     | '-' exp %prec UMINUS  { $$ = newast('M', $2, NULL); }
     | INT_LITERAL           { $$ = newint($1); }

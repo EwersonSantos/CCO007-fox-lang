@@ -54,6 +54,7 @@ void idlistfree(struct idlist *il);
  * Opções para nodetype
  * + - * /
  * 0-7  operações de comparação
+ * 8-9  operações lógicas
  * M    menos unário
  * L    expressão ou lista de declarações (statements)
  * I    IF
@@ -79,10 +80,12 @@ enum bifs {
  */
  /* Nó usado para expressões e comparação */
 struct ast {
-    int nodetype;       // tipo L ou 0-7
+    int nodetype;       // tipo L ou 0-9
     struct ast *l;      // nó da esquerda
     struct ast *r;      // nó da direita
 };
+ /* Nó usado para o operador lógico '!' */
+
 
 /* Nó de função da linguagem */
 struct fncall {
@@ -131,15 +134,17 @@ struct symasgn {
 };
 
 
-/* Cia um nó da AST */
+/* Cria um nó da AST */
 struct ast *newast(int nodetype, struct ast *l, struct ast *r);
-/* Cia um nó de comparação */
+/* Cria um nó de comparação */
 struct ast *newcmp(int cmptype, struct ast *l, struct ast *r);
-/* Cia um nó de função da linguagem */
+/* Cria um nó operação lógica */
+struct ast *newlgi(int cmptype, struct ast *l, struct ast *r);
+/* Cria um nó de função da linguagem */
 struct ast *newfunc(int functype, struct ast *l);
-/* Cia um nó de símbolo */
+/* Cria um nó de símbolo */
 struct ast *newref(struct symbol *s);
-/* Cia um nó de atribuição */
+/* Cria um nó de atribuição */
 struct ast *newasgn(struct symbol *s, struct ast *v);
 /* Cria um nó de número inteiro*/
 struct ast *newint(int i);
@@ -147,7 +152,7 @@ struct ast *newint(int i);
 struct ast *newfloat(double f);
 /* Cria um nó de caractere*/
 struct ast *newchar(char c);
-/* Cia um nó de estrutura de controle */
+/* Cria um nó de estrutura de controle */
 struct ast *newflow(int nodetype, struct ast *cond, struct ast *tl, struct ast *tr);
 
 /* Define uma variável */
