@@ -34,31 +34,48 @@ EXP ([Ee][-+]?[0-9]+)
 "if"    { return IF; }
 "else"  { return ELSE; }
 "while" { return WHILE; }
-"def"   { return DEF; }
+"int"   { return INT_KEYWORD; }
+"float" { return FLOAT_KEYWORD; }
+"char"  { return CHAR_KEYWORD; }
 
  /* Funções da linguagem */
  "sqrt"     { yylval.fn = B_sqrt; return FUNC; }
  "exp"      { yylval.fn = B_exp; return FUNC; }
  "log"      { yylval.fn = B_log; return FUNC; }
  "print"    { yylval.fn = B_print; return FUNC; }
+ "scan"     { yylval.fn = B_scan; return FUNC; }
 
  /* Identificadores */
 [a-zA-Z][a-zA-Z0-9_]* {
-    yylval.s = lookup(yytext);
-    return ID;
+    if ( (yylval.s = getsymbol(yytext)) ) {
+        return VAR;
+    } else {
+        yylval.st = yytext;
+        return ID;
+    }
 }
 
  /* Números */
-[0-9]+"."[0-9]*{EXP}?|"."?[0-9]+{EXP}? {
-    yylval.d = atof(yytext);
-    return NUMBER;
+[0-9]+{EXP}? {
+    yylval.i = atoi(yytext);
+    return INT_LITERAL;
 }
+("."?[0-9]+{EXP}?)|([0-9]+"."[0-9]*{EXP}?) {
+    yylval.d = atof(yytext);
+    return FLOAT_LITERAL;
+}
+
+ /* Caractere */
+ '(.)?' {
+     yylval.c = yytext[1];
+     return CHAR_LITERAL;
+ }
 
 "//".*  // ignora comentários da forma "//"
 [ \t]   // ignora espaços em branco
 \n      // ignora fim de linha */
 
-.       { yyerror("Mystery character %c\n", *yytext); } // caracter não reconhecido
+.       { yyerror("Unknown character %c\n", *yytext); } // caracter não reconhecido
 
 <<EOF>> { exit(0); }    // End-Of-File, final do arquivo
 

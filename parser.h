@@ -10,9 +10,17 @@ extern FILE *yyin;          // entrada (padrão - stdin)
 extern FILE *yyout;         // saída (padrão - stdout)
 void yyerror(char *s, ...); // método padrão de notificação de erros
 
+/* Funções da linguagem */
+enum symtype {
+    T_int = 1,
+    T_float,
+    T_char,
+};
+
 /* Estrutura usada para representar um símbolo, na tabela de símbolos */
 struct symbol {
     char *name;             // nome do símbolo
+    int type;               // tipo
     double value;           // valor numérico do símbolo (se variável)
     struct ast *func;       // AST que representa as declarações de uma função
     struct symlist *syms;   // lista de argumentos da função
@@ -26,18 +34,20 @@ struct symbol symtab[NHASH];
  * Se o nome buscado existe, o símbolo é retornado. Se não,
  * e existe espaço livre na tabela, o novo símbolo é inserido.
  */
-struct symbol *lookup(char*);
+struct symbol *newsymbol(int type, char *sym);
+struct symbol *getsymbol(char *sym);
 
-/* Lista de símbolos, usado na passagem de argumentos */
-struct symlist {
-    struct symbol *sym;
-    struct symlist *next;
+/* Lista de Identificadores, usado na declaração de variáveis */
+struct idlist {
+    char *id;
+    struct idlist *next;
 };
 
-/* Cria lista de símbolos */
-struct symlist *newsymlist(struct symbol *sym, struct symlist *next);
-/* Limpa uma lista de símbolos */
-void symlistfree(struct symlist *sl);
+/* Cria lista de identificadores */
+struct idlist *newidlist(char *id, struct idlist *next);
+
+/* Limpa uma lista identificadores */
+void idlistfree(struct idlist *il);
 
 
 /*
@@ -52,7 +62,6 @@ void symlistfree(struct symlist *sl);
  * =    atribuição
  * S    lista de símbolos
  * F    função da linguagem
- * C    função do usuário
 */
 
 /* Funções da linguagem */
@@ -61,6 +70,7 @@ enum bifs {
     B_exp,
     B_log,
     B_print,
+    B_scan
 };
 
 /* Nós da Abstract Syntax Tree (AST)
@@ -81,13 +91,6 @@ struct fncall {
     enum bifs functype; // número da função
 };
 
-/* Nó de função do usuário */
-struct ufncall {
-    int nodetype;       // tipo C
-    struct ast *l;      // AST da função
-    struct symbol *s;   // símbolo da função
-};
-
 /* Nó de estruturas de controle */
 struct flow {
     int nodetype;       // tipo I ou W
@@ -96,10 +99,22 @@ struct flow {
     struct ast *el;     // senão (opcional) - declarações
 };
 
-/* Nó de número */
-struct numval {
-    int nodetype;       // tipo K
+/* Nó de número inteiro */
+struct intval {
+    int nodetype;       // tipo X
+    int number;         // valor numérico
+};
+
+/* Nó de ponto flutuante */
+struct floatval {
+    int nodetype;       // tipo Y
     double number;      // valor numérico
+};
+
+/* Nó de caractere */
+struct charval {
+    int nodetype;       // tipo Z
+    char c;        // valor numérico
 };
 
 /* Nó de símbolo */
@@ -122,19 +137,21 @@ struct ast *newast(int nodetype, struct ast *l, struct ast *r);
 struct ast *newcmp(int cmptype, struct ast *l, struct ast *r);
 /* Cia um nó de função da linguagem */
 struct ast *newfunc(int functype, struct ast *l);
-/* Cia um nó de função do usuário */
-struct ast *newcall(struct symbol *s, struct ast *l);
 /* Cia um nó de símbolo */
 struct ast *newref(struct symbol *s);
 /* Cia um nó de atribuição */
 struct ast *newasgn(struct symbol *s, struct ast *v);
-/* Cria um nó de número*/
-struct ast *newnum(double d);
+/* Cria um nó de número inteiro*/
+struct ast *newint(int i);
+/* Cria um nó de ponto flutuante*/
+struct ast *newfloat(double f);
+/* Cria um nó de caractere*/
+struct ast *newchar(char c);
 /* Cia um nó de estrutura de controle */
 struct ast *newflow(int nodetype, struct ast *cond, struct ast *tl, struct ast *tr);
 
-/* Define uma função */
-void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);
+/* Define uma variável */
+void defvar(int type, struct idlist *syms);
 
 /* Avalia a expressão representada por uma AST */
 double eval(struct ast *);

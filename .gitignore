@@ -1,5 +1,6 @@
 fox
-fox-lang.lex.c
-fox-lang.tab.c
-fox-lang.tab.h
-
+a.out
+parser.tab.c
+parser.tab.h
+scanner.lex.c
+test.fox
