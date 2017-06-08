@@ -30,6 +30,12 @@ EXP ([Ee][-+]?[0-9]+)
 ">="    { yylval.fn = 5; return CMP; }
 "<="    { yylval.fn = 6; return CMP; }
 
+ /* Operações lógicas, todos usam o token LOGI */
+"!"     { yylval.fn = 7; return LOGI; }
+"&&"    { yylval.fn = 8; return LOGI; }
+"||"    { yylval.fn = 9; return LOGI; }
+
+
  /* Palavras reservadas */
 "if"    { return IF; }
 "else"  { return ELSE; }
